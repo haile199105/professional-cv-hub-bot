@@ -14,7 +14,7 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 if not TELEGRAM_TOKEN or not GEMINI_API_KEY:
-    raise ValueError("Please set TELEGRAM_TOKEN and GEMINI_API_KEY")
+    raise ValueError("Please set TELEGRAM_TOKEN and GEMINI_API_KEY in Railway Variables")
 
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-2.5-flash')
@@ -28,7 +28,7 @@ user_states = {}
 class ProfessionalCVPDF(FPDF):
     def header(self):
         self.set_font("Arial", "B", 18)
-        self.set_text_color(0, 51, 102)   # Dark Navy Blue
+        self.set_text_color(0, 51, 102)   # Navy Blue
         self.cell(0, 12, "Professional CV", ln=1, align="C")
         self.set_font("Arial", "I", 10)
         self.set_text_color(100, 100, 100)
@@ -40,7 +40,7 @@ class ProfessionalCVPDF(FPDF):
         self.set_text_color(255, 140, 0)  # Gold
         self.cell(0, 10, title.upper(), ln=1)
         self.set_draw_color(255, 140, 0)
-        self.line(10, self.get_y(), 200, self.get_y())  # Subtle gold line
+        self.line(10, self.get_y(), 200, self.get_y())
         self.ln(5)
 
     def section_body(self, text):
@@ -54,6 +54,7 @@ class ProfessionalCVPDF(FPDF):
         self.set_text_color(0, 51, 102)
         self.cell(0, 6, f"Contact: {contact}", ln=1, align="C")
         self.ln(8)
+
 # ================== BOT HANDLERS ==================
 @dp.message(Command("start"))
 async def start_cmd(message: types.Message):
@@ -105,31 +106,29 @@ async def handle_steps(message: types.Message):
 
     elif step == 6:
         state["target"] = message.text.strip()
-        
-prompt = f"""
-You are an expert CV writer specializing in Ethiopian, African Union, and international job markets in 2026.
 
-Create a clean, modern, ATS-friendly CV using this information:
+        # Use Gemini to format professionally
+        prompt = f"""
+        You are an expert CV writer for Ethiopian and international job markets in 2026.
+        Create a clean, modern, ATS-friendly CV using this information:
 
-Name: {state['name']}
-Contact: {state['contact']}
-Education: {state['education']}
-Experience: {state['experience']}
-Skills: {state['skills']}
-Target: {state['target']}
+        Name: {state['name']}
+        Contact: {state['contact']}
+        Education: {state['education']}
+        Experience: {state['experience']}
+        Skills: {state['skills']}
+        Target: {state['target']}
 
-Rules:
-- Use reverse-chronological order
-- Strong action verbs and quantifiable achievements where possible
-- Keep it concise and professional
-- Standard sections: Professional Summary, Education, Professional Experience, Technical Skills
-- Return ONLY the well-formatted CV text with clear section headings. No extra comments.
-"""
+        Use strong action verbs and keep it concise.
+        Return ONLY the well-formatted CV text with clear section headings. No extra comments.
+        """
 
-        # Generate beautiful PDF
+        response = model.generate_content(prompt)
+        formatted_cv = response.text
+
+        # Generate PDF
         pdf = ProfessionalCVPDF()
         pdf.add_page()
-
         pdf.add_contact(state["contact"])
 
         pdf.section_title("Professional Summary")
@@ -147,13 +146,13 @@ Rules:
         filename = f"CV_{state['name'].replace(' ', '_')}.pdf"
         pdf.output(filename)
 
-        # Send PDF
+        # Send to user
         await message.answer("🎉 Your professional CV is ready!")
         await message.answer_document(
             types.FSInputFile(filename),
             caption=f"Here is your modern CV, {state['name'].split()[0]}!\n\n"
                     "Want a matching Cover Letter? Type /cover\n"
-                    "Need human review or customization? Contact @haileeyesus19"
+                    "Need human review? Contact @haileeyesus19"
         )
 
         # Cleanup
@@ -163,7 +162,7 @@ Rules:
 
 # ================== RUN BOT ==================
 async def main():
-    print("🚀 Professional CV Hub Bot with Improved PDF is running...")
+    print("🚀 Professional CV Hub Bot is running...")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
