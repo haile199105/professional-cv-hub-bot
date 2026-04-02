@@ -28,32 +28,32 @@ user_states = {}
 class ProfessionalCVPDF(FPDF):
     def header(self):
         self.set_font("Arial", "B", 18)
-        self.set_text_color(0, 51, 102)   # Navy Blue
+        self.set_text_color(0, 51, 102)   # Dark Navy Blue
         self.cell(0, 12, "Professional CV", ln=1, align="C")
         self.set_font("Arial", "I", 10)
         self.set_text_color(100, 100, 100)
         self.cell(0, 8, "Prepared by Professional CV Hub", ln=1, align="C")
-        self.ln(8)
+        self.ln(10)
 
     def section_title(self, title):
         self.set_font("Arial", "B", 13)
         self.set_text_color(255, 140, 0)  # Gold
         self.cell(0, 10, title.upper(), ln=1)
-        self.line(10, self.get_y(), 200, self.get_y())  # Gold line
-        self.ln(4)
+        self.set_draw_color(255, 140, 0)
+        self.line(10, self.get_y(), 200, self.get_y())  # Subtle gold line
+        self.ln(5)
 
     def section_body(self, text):
         self.set_font("Arial", "", 10.5)
         self.set_text_color(40, 40, 40)
         self.multi_cell(0, 6, text)
-        self.ln(6)
+        self.ln(7)
 
     def add_contact(self, contact):
-        self.set_font("Arial", "", 10)
+        self.set_font("Arial", "", 10.5)
         self.set_text_color(0, 51, 102)
-        self.cell(0, 6, contact, ln=1, align="C")
-        self.ln(5)
-
+        self.cell(0, 6, f"Contact: {contact}", ln=1, align="C")
+        self.ln(8)
 # ================== BOT HANDLERS ==================
 @dp.message(Command("start"))
 async def start_cmd(message: types.Message):
