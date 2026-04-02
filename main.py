@@ -105,25 +105,26 @@ async def handle_steps(message: types.Message):
 
     elif step == 6:
         state["target"] = message.text.strip()
+        
+prompt = f"""
+You are an expert CV writer specializing in Ethiopian, African Union, and international job markets in 2026.
 
-        # Use Gemini to make it professional
-        prompt = f"""
-        You are a professional CV writer for Ethiopian and international job markets.
-        Create a clean, modern, achievement-focused CV using this information:
+Create a clean, modern, ATS-friendly CV using this information:
 
-        Name: {state['name']}
-        Contact: {state['contact']}
-        Education: {state['education']}
-        Experience: {state['experience']}
-        Skills: {state['skills']}
-        Target: {state['target']}
+Name: {state['name']}
+Contact: {state['contact']}
+Education: {state['education']}
+Experience: {state['experience']}
+Skills: {state['skills']}
+Target: {state['target']}
 
-        Use strong action verbs. Make it concise and impactful.
-        Return ONLY the well-formatted CV text with clear sections.
-        """
-
-        response = model.generate_content(prompt)
-        formatted_cv = response.text
+Rules:
+- Use reverse-chronological order
+- Strong action verbs and quantifiable achievements where possible
+- Keep it concise and professional
+- Standard sections: Professional Summary, Education, Professional Experience, Technical Skills
+- Return ONLY the well-formatted CV text with clear section headings. No extra comments.
+"""
 
         # Generate beautiful PDF
         pdf = ProfessionalCVPDF()
